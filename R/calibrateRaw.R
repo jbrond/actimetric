@@ -83,7 +83,7 @@ calibrateRaw = function(raw, sf, verbose = TRUE) {
         J[i, 9] =  f9(Vx[i], Vy[i], Vz[i], Mxx0,Mxy0,Mxz0,Myy0,Myz0,Mzz0,Bx0,By0,Bz0)
       }
       Rnew = sqrt(sum(R^2))
-      H = solve(t(J) %*% J)
+      H = solve(t(J) %*% J, tol = 1e-25)
       D = t(J) %*% R
       v = v - lambda*t(H %*% D)
       if (Rnew <= Rold) lambda = lambda - kl*lambda else lambda = kl*lambda

@@ -32,6 +32,8 @@
 #' be printed in the console.
 #' @param do.enmo Logical (default = TRUE) indicating whether ENMO should be
 #' calculated.
+#' @param do.mad Logical (default = FALSE) indicating whether MAD should be
+#' calculated.
 #' @param do.actilifecounts Logical (default = FALSE) indicating whether activity
 #' counts should be calculated.
 #' @param do.actilifecountsLFE Logical (default = FALSE) indicating whether activity
@@ -87,7 +89,7 @@
 #' @author Matthew N. Ahmadi <matthew.ahmadi@sydney.edu.au>
 runActimetric = function(input_directory = NULL, output_directory = NULL, studyname = "actimetric",
                          do.calibration = TRUE, do.sleep = TRUE, do.nonwear = TRUE,
-                         do.enmo = TRUE, do.actilifecounts = FALSE,
+                         do.enmo = TRUE, do.actilifecounts = FALSE, do.mad = FALSE,
                          do.actilifecountsLFE = FALSE,
                          classifier = NULL,
                          boutdur = c(10), boutcriter = 0.8, boutmaxgap = 1,
@@ -227,7 +229,7 @@ runActimetric = function(input_directory = NULL, output_directory = NULL, studyn
       S = matrix(0,0,4) #dummy variable needed to cope with head-tailing succeeding blocks of data
       # ---------------------------------------------------------------------
       # Run Pipeline...
-      nonwear = enmo = agcounts = LFEcounts = tilt = anglez = NULL
+      nonwear = enmo = agcounts = LFEcounts = tilt = anglez = madpa = NULL
       activity = factor()
       while (isLastBlock == FALSE) {
         # 1 - read and extract calibration coefficients
@@ -292,6 +294,17 @@ runActimetric = function(input_directory = NULL, output_directory = NULL, studyn
             enm = slide(enm, width = epoch*sf, FUN = mean)
             enmo = c(enmo, enm)
           }
+          mpa = NULL
+          if (do.mad) {
+            #Calculating the mean and replicating it
+            mpa = rep(slide(vm, width = epoch*sf, FUN = mean),epoch*sf)
+            #Now subtrating the mean of the vector magnitude (gravity component)
+            #and taking the absolute
+            mpa = abs(vm - mpa)
+            #Now making the average of the data to get Mean absolute deviation
+            mpa = slide(mpa, width = epoch*sf, FUN = mean)
+            madpa = c(madpa, mpa)
+          }
           # activity counts per epoch with default filter
           AGc = NULL
           if (do.actilifecounts) {
@@ -335,6 +348,9 @@ runActimetric = function(input_directory = NULL, output_directory = NULL, studyn
         subject = rep(ID, length(activity))
         ts = as.data.frame(cbind(subject, timestamp, tilt, activity, nonwear))
         if (length(enmo) == nrow(ts)) ts = as.data.frame(cbind(ts, enmo))
+        if (!is.null(madpa)) {
+          if (length(madpa) == nrow(ts)) ts = as.data.frame(cbind(ts, madpa))
+        }
         if (!is.null(agcounts)) {
           if (nrow(agcounts) == nrow(ts)) ts = as.data.frame(cbind(ts, agcounts))
         }

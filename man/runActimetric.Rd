@@ -13,6 +13,7 @@ runActimetric(
   do.nonwear = TRUE,
   do.enmo = TRUE,
   do.actilifecounts = FALSE,
+  do.mad = FALSE,
   do.actilifecountsLFE = FALSE,
   classifier = NULL,
   boutdur = c(10),
@@ -53,6 +54,9 @@ calculated.}
 
 \item{do.actilifecounts}{Logical (default = FALSE) indicating whether activity
 counts should be calculated.}
+
+\item{do.mad}{Logical (default = FALSE) indicating whether MAD should be
+calculated.}
 
 \item{do.actilifecountsLFE}{Logical (default = FALSE) indicating whether activity
 counts using the low-frequency extension filter should be calculated.}
